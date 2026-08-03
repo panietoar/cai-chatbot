@@ -2,7 +2,7 @@
 
 `./CLAUDE.md` — read automatically by Claude Code on every session.
 
-Before making changes, read `plan.md` completely. It is the source of truth for scope, architecture, implementation phases, trade-offs, and definition of done.
+Before making changes, read `plan.md` completely. It is the source of truth for scope, architecture, trade-offs, and definition of done. Read `implementation-plan.md` when selecting or implementing work; it defines the incremental delivery order but cannot override `plan.md`.
 
 ## Project Overview
 
@@ -127,7 +127,7 @@ Work one bounded phase from `plan.md` at a time.
 
 Use one explicit handoff at a time:
 
-1. `/spec [optional phase or constraint]` delegates to `po-spec` and produces one bounded `DRAFT` spec.
+1. `/spec [optional phase, story ID, or constraint]` delegates to `po-spec`, selects from `implementation-plan.md`, and produces one bounded `DRAFT` spec.
 2. The user reviews the spec and explicitly changes or authorizes its status as `APPROVED`.
 3. `/develop <approved-spec-path>` delegates only the approved scope to `developer`.
 4. `/review <approved-spec-path> [optional diff scope]` delegates the resulting diff to `code-reviewer`.

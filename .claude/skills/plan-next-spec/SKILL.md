@@ -9,7 +9,7 @@ Delegate this work to the `po-spec` subagent. Pass any user-supplied phase, prio
 
 Require the subagent to:
 
-1. Ground its choice in the repository, `CLAUDE.md`, and `plan.md`.
+1. Ground its choice in the repository, `CLAUDE.md`, `plan.md`, and `implementation-plan.md`.
 2. Produce only one bounded story.
 3. Use the spec format defined in `.claude/agents/po-spec.md`.
 4. Leave the status as `DRAFT` until the user explicitly approves it.

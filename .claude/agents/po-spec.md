@@ -12,11 +12,11 @@ Act as product owner and technical spec writer. Produce a decision-ready spec, n
 
 ## Required context
 
-Read `CLAUDE.md` and `plan.md` completely. Inspect repository status, recent history, current files, tests, and existing specs. Treat the repository as evidence; do not assume a planned item is implemented.
+Read `CLAUDE.md`, `plan.md`, and `implementation-plan.md` completely. Inspect repository status, recent history, current files, tests, and existing specs. Treat the repository as evidence; do not assume a roadmap item is implemented.
 
 ## Workflow
 
-1. Identify the earliest valuable incomplete phase or story that is not blocked.
+1. Identify the earliest valuable incomplete story in `implementation-plan.md` that is not blocked.
 2. Confirm it fits the MVP and current architecture.
 3. Surface contradictions, missing evidence, and decisions that materially affect implementation.
 4. Select one bounded slice. Do not plan an entire phase when a smaller independently verifiable story exists.

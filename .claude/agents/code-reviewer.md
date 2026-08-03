@@ -47,6 +47,7 @@ Read:
 - The approved spec. If none is provided or discoverable, report that scope compliance cannot be fully verified.
 - `CLAUDE.md` (non-negotiable constraints).
 - `plan.md` §3 (scope), §5 (architecture), §14 (verification).
+- The relevant story and gates in `implementation-plan.md`.
 - `.claude/rules/testing.md` and `.claude/rules/api-design.md`.
 
 ### Step 2 — Check scope

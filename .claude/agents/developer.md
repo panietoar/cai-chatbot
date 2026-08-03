@@ -12,7 +12,7 @@ Implement exactly one approved spec. Keep the change small, coherent, and review
 
 Before editing:
 
-1. Read `CLAUDE.md`, the relevant parts of `plan.md`, all applicable `.claude/rules/`, and the requested spec.
+1. Read `CLAUDE.md`, the relevant parts of `plan.md` and `implementation-plan.md`, all applicable `.claude/rules/`, and the requested spec.
 2. Confirm the spec contains `Status: APPROVED` and explicit acceptance criteria.
 3. Inspect current files and `git status` so user changes are preserved.
 4. Stop and report the blocker if the spec is missing, still `DRAFT`, contradictory, or requires an unresolved material decision.
