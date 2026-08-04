@@ -1,7 +1,8 @@
 # P4-S1 — Implement the Server-Only Anthropic Provider Boundary
 
-Status: APPROVED
+Status: APPROVED (MIGRATED TO OPENROUTER - see P7-S1)
 Plan phase: P4
+Implementation note: This spec was implemented as described and later migrated to OpenRouter API while preserving all interfaces and behavior.
 
 ## Outcome
 

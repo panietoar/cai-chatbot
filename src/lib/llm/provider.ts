@@ -1,15 +1,21 @@
 /**
- * Anthropic provider module.
+ * OpenRouter provider module.
  *
- * Encapsulates all Anthropic API integration, error handling, normalization,
+ * Encapsulates all OpenRouter API integration, error handling, normalization,
  * and structured logging. The module abstracts provider-specific details
  * and normalizes responses into a provider-neutral interface.
  *
  * This module is server-only and never accessed from client code.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import { getProviderConfig, getApiKey } from "./config";
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+const OPENROUTER_API_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+const REQUEST_TIMEOUT_MS = 30_000; // 30-second timeout as per spec
 
 // ============================================================================
 // Type Definitions
@@ -102,17 +108,12 @@ function mapErrorToResponse(error: unknown): ErrorMapEntry {
   }
 
   // Check for HTTP error status codes
-  // Handle both real Anthropic.APIError and mocked versions
   const hasStatus = (e: unknown): e is { status?: number } => {
-    return (
-      typeof e === "object" &&
-      e !== null &&
-      ("status" in e || e instanceof Error)
-    );
+    return typeof e === "object" && e !== null && "status" in e;
   };
 
-  if (hasStatus(error) || (error instanceof Error && error.name === "APIError")) {
-    const status = hasStatus(error) ? error.status : undefined;
+  if (hasStatus(error)) {
+    const status = error.status;
 
     if (status === 401 || status === 403) {
       return {
@@ -138,8 +139,7 @@ function mapErrorToResponse(error: unknown): ErrorMapEntry {
       };
     }
 
-    // Check if it's an API error without a recognized status code
-    if (error instanceof Error && error.name === "APIError") {
+    if (status && status >= 500) {
       return {
         errorCode: "PROVIDER_ERROR",
         userSafeMessage:
@@ -160,18 +160,20 @@ function mapErrorToResponse(error: unknown): ErrorMapEntry {
 // Response Normalization
 // ============================================================================
 
-function normalizeFinishReason(anthropicReason: string | null): FinishReason {
-  // Map Anthropic stop reasons to normalized finishReason
-  if (!anthropicReason) {
+function normalizeFinishReason(openRouterReason: string | null | undefined): FinishReason {
+  // Map OpenRouter finish reasons to normalized finishReason
+  if (!openRouterReason) {
     return "stop";
   }
 
-  switch (anthropicReason) {
-    case "end_turn":
+  switch (openRouterReason) {
+    case "stop":
       return "stop";
-    case "max_tokens":
+    case "length":
       return "max_tokens";
-    case "stop_sequence":
+    case "content_filter":
+      return "stop";
+    case "tool_calls":
       return "stop";
     default:
       return "stop";
@@ -183,9 +185,9 @@ function normalizeFinishReason(anthropicReason: string | null): FinishReason {
 // ============================================================================
 
 /**
- * Generate a response from the Anthropic LLM.
+ * Generate a response from the OpenRouter LLM API.
  *
- * Normalizes the request, calls the Anthropic API with a 30-second timeout,
+ * Normalizes the request, calls the OpenRouter API with a 30-second timeout,
  * normalizes the response, and logs structured events. All errors are caught
  * and mapped to typed error responses; the function never throws.
  *
@@ -202,49 +204,85 @@ export async function generateResponse(
   const requestId = request.requestId;
 
   try {
-    // Initialize Anthropic client with timeout
-    const client = new Anthropic({
-      apiKey,
-      timeout: 30_000, // 30-second timeout as per spec
-    });
+    // Transform request to OpenRouter format
+    const messages = [
+      { role: "system", content: request.systemPrompt },
+      ...request.userMessages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
+    ];
 
-    // Make API call
-    const response = await client.messages.create({
+    const openRouterRequest = {
       model: config.model,
+      messages,
       max_tokens: request.maxTokens,
       temperature: request.temperature,
-      system: request.systemPrompt,
-      messages: request.userMessages,
-    });
-
-    // Extract and normalize response
-    const firstContent = response.content[0];
-    if (!firstContent || firstContent.type !== "text") {
-      throw new Error("Unexpected response format: no text content");
-    }
-
-    const durationMs = Date.now() - startTime;
-
-    const successResponse: ProviderSuccessResponse = {
-      type: "success",
-      text: firstContent.text,
-      finishReason: normalizeFinishReason(response.stop_reason),
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
     };
 
-    // Log structured event
-    logStructuredEvent({
-      timestamp: new Date().toISOString(),
-      model: config.model,
-      durationMs,
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
-      finishReason: response.stop_reason,
-      requestId,
-    });
+    // Make API call with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-    return successResponse;
+    try {
+      const response = await fetch(OPENROUTER_API_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+          "HTTP-Referer": config.siteUrl,
+          "X-Title": config.appName,
+        },
+        body: JSON.stringify(openRouterRequest),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      // Check response status
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => "");
+        throw { status: response.status, message: errorBody };
+      }
+
+      // Parse response
+      const responseData = await response.json();
+
+      // Validate response structure
+      if (!responseData.choices || !Array.isArray(responseData.choices) || responseData.choices.length === 0) {
+        throw new Error("Unexpected response format: no choices array");
+      }
+
+      const firstChoice = responseData.choices[0];
+      if (!firstChoice.message || typeof firstChoice.message.content !== "string") {
+        throw new Error("Unexpected response format: no message content");
+      }
+
+      const durationMs = Date.now() - startTime;
+
+      const successResponse: ProviderSuccessResponse = {
+        type: "success",
+        text: firstChoice.message.content,
+        finishReason: normalizeFinishReason(firstChoice.finish_reason),
+        inputTokens: responseData.usage?.prompt_tokens || 0,
+        outputTokens: responseData.usage?.completion_tokens || 0,
+      };
+
+      // Log structured event
+      logStructuredEvent({
+        timestamp: new Date().toISOString(),
+        model: config.model,
+        durationMs,
+        inputTokens: successResponse.inputTokens,
+        outputTokens: successResponse.outputTokens,
+        finishReason: firstChoice.finish_reason,
+        requestId,
+      });
+
+      return successResponse;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch (error) {
     const durationMs = Date.now() - startTime;
     const errorMapping = mapErrorToResponse(error);

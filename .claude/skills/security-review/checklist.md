@@ -9,7 +9,7 @@ Work through each item in the order listed. Mark each as **PASS**, **FAIL**, or 
 - [ ] No API keys, tokens, or passwords appear in source files.
 - [ ] No secrets appear in `.env.example` (names only, no values).
 - [ ] `.env` and `.env.local` are listed in `.gitignore`.
-- [ ] `ANTHROPIC_API_KEY` is accessed only in server-side code (`src/app/api/` or `src/lib/`).
+- [ ] `OPENROUTER_API_KEY` is accessed only in server-side code (`src/app/api/` or `src/lib/`).
 - [ ] No secrets are passed to client-side React components.
 - [ ] No secrets appear in Next.js `publicRuntimeConfig` or `NEXT_PUBLIC_*` variables.
 - [ ] No secrets are logged to the console or any logging sink.
@@ -67,7 +67,7 @@ Work through each item in the order listed. Mark each as **PASS**, **FAIL**, or 
 
 ## G. Server / Infrastructure
 
-- [ ] The `ANTHROPIC_API_KEY` is only read server-side (never in a `use client` component).
+- [ ] The `OPENROUTER_API_KEY` is only read server-side (never in a `use client` component).
 - [ ] No API route exposes the model name, system prompt, or knowledge content when called without a valid request.
 - [ ] The `/api/chat` route returns 405 for GET, PUT, DELETE — only POST is allowed.
 - [ ] CORS is not set to `*` unless explicitly required and approved.
@@ -94,4 +94,4 @@ Work through each item in the order listed. Mark each as **PASS**, **FAIL**, or 
 
 - [ ] Request bodies are not logged in full (may contain user PII).
 - [ ] Logged events contain only: timestamp, request ID, event type, sanitized outcome.
-- [ ] No log line includes the value of `ANTHROPIC_API_KEY` or any secret.
+- [ ] No log line includes the value of `OPENROUTER_API_KEY` or any secret.

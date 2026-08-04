@@ -1,13 +1,15 @@
 /**
  * Provider configuration module.
  *
- * Validates and exports the Anthropic API configuration.
+ * Validates and exports the OpenRouter API configuration.
  * Validation happens at module initialization; this ensures errors are caught at startup.
  * The API key is never exported; it is used internally by the provider module only.
  */
 
 interface ProviderConfig {
   model: string;
+  siteUrl: string;
+  appName: string;
   validatedAt: string;
 }
 
@@ -16,32 +18,36 @@ let apiKey: string | null = null;
 
 /**
  * Validate and cache the provider configuration.
- * Throws if ANTHROPIC_MODEL or ANTHROPIC_API_KEY is missing or empty.
+ * Throws if OPENROUTER_MODEL or OPENROUTER_API_KEY is missing or empty.
  */
 function initializeConfig(): void {
   if (config !== null) {
     return;
   }
 
-  const model = process.env.ANTHROPIC_MODEL?.trim();
-  const key = process.env.ANTHROPIC_API_KEY?.trim();
+  const model = process.env.OPENROUTER_MODEL?.trim();
+  const key = process.env.OPENROUTER_API_KEY?.trim();
+  const siteUrl = process.env.OPENROUTER_SITE_URL?.trim() || "";
+  const appName = process.env.OPENROUTER_APP_NAME?.trim() || "Cadre AI Support Chatbot";
 
   if (!model) {
     throw new Error(
-      "Configuration error: ANTHROPIC_MODEL environment variable is missing or empty. " +
-        "Set it to a valid Anthropic model identifier (e.g., claude-haiku-4-5-20251001)."
+      "Configuration error: OPENROUTER_MODEL environment variable is missing or empty. " +
+        "Set it to a valid OpenRouter model identifier (e.g., anthropic/claude-3.5-haiku)."
     );
   }
 
   if (!key) {
     throw new Error(
-      "Configuration error: ANTHROPIC_API_KEY environment variable is missing or empty. " +
-        "Set it to your Anthropic API key."
+      "Configuration error: OPENROUTER_API_KEY environment variable is missing or empty. " +
+        "Set it to your OpenRouter API key."
     );
   }
 
   config = {
     model,
+    siteUrl,
+    appName,
     validatedAt: new Date().toISOString(),
   };
 

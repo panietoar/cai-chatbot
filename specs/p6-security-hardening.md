@@ -16,7 +16,7 @@ Run a comprehensive security review using the project security-review skill, sys
    - Quote exact vulnerable lines for any FAILs with concrete fix proposals
 
 2. **Systematically verify checklist categories**:
-   - **A. Secret and Credential Exposure**: Review all uses of `ANTHROPIC_API_KEY`, `.env` files, logging, client/server boundaries
+   - **A. Secret and Credential Exposure**: Review all uses of `OPENROUTER_API_KEY`, `.env` files, logging, client/server boundaries
    - **B. Prompt Injection**: Verify user input is never concatenated into system prompt, delimiters are present, guardrails are effective
    - **C. Input Validation**: Verify all API inputs are validated, length limits enforced, unknown fields rejected
    - **D. Output Safety**: Verify output guardrails check every response, non-approved URLs are blocked, no stack traces leak
@@ -150,7 +150,7 @@ This is the first formal security review before release. Depth should be thoroug
    - Verify no API keys, tokens, or passwords in source files: `grep -r "sk-ant-" src/` should return empty
    - Verify `.env.example` contains only names, no values
    - Verify `.env` and `.env.local` are in `.gitignore`
-   - Verify `ANTHROPIC_API_KEY` is only accessed in `src/lib/llm/config.ts` (server-side)
+   - Verify `OPENROUTER_API_KEY` is only accessed in `src/lib/llm/config.ts` (server-side)
    - Verify no secrets in React components (search for "use client" + "ANTHROPIC")
    - Verify no `NEXT_PUBLIC_*` variables with secrets
    - Verify logs don't include secrets: review all `console.log` and `console.error` calls
@@ -188,7 +188,7 @@ This is the first formal security review before release. Depth should be thoroug
    - Run test: `npm test -- src/components/SafeActionLink.test.ts` — verify link validation
 
 8. **Review server/infrastructure (Checklist G)**:
-   - Read `src/lib/llm/config.ts`: verify `ANTHROPIC_API_KEY` is accessed via `process.env`, not imported into client code
+   - Read `src/lib/llm/config.ts`: verify `OPENROUTER_API_KEY` is accessed via `process.env`, not imported into client code
    - Verify no `use client` directive in any file that imports `config.ts`: `grep -l "use client" src/**/*.{ts,tsx} | xargs grep -l "llm/config"`
    - Verify only POST is exported from route: `grep "export.*function" src/app/api/chat/route.ts` should show only POST
    - Verify no CORS wildcard: `grep -r "Access-Control-Allow-Origin.*\*" src/` should be empty
@@ -209,7 +209,7 @@ This is the first formal security review before release. Depth should be thoroug
     - Read `src/app/api/chat/route.ts` logOrchestration function: verify request bodies are excluded
     - Verify only safe fields are logged: timestamp, requestId, durationMs, outcome, retrievalIds, promptVersion, modelName, token counts, errorCode, reason
     - Verify `originalText` is only logged for rejected output, not normal flow
-    - Search for credential logging: `grep -r "console.*ANTHROPIC_API_KEY\|console.*key.*:" src/` (should find only test mocks)
+    - Search for credential logging: `grep -r "console.*OPENROUTER_API_KEY\|console.*key.*:" src/` (should find only test mocks)
 
 12. **Document findings in security review document**:
     - Create `docs/security-review-2026-08-04.md` (use actual date)
@@ -277,7 +277,7 @@ This is the first formal security review before release. Depth should be thoroug
 7. **Secret management is verified**:
    - `.env` and `.env.local` are in `.gitignore`
    - `.env.example` contains only variable names, no values
-   - `ANTHROPIC_API_KEY` is accessed only in server-side code (`src/lib/llm/config.ts`)
+   - `OPENROUTER_API_KEY` is accessed only in server-side code (`src/lib/llm/config.ts`)
    - No `NEXT_PUBLIC_*` variables contain secrets
    - No secrets in logs or responses
 

@@ -104,8 +104,10 @@ This structure may be adjusted when the actual implementation justifies it. Do n
 ## Environment Variables
 
 ```text
-ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL=
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=
+OPENROUTER_SITE_URL=       # optional
+OPENROUTER_APP_NAME=       # optional
 ```
 
 Keep `.env.example` with names only. Add secret files to `.gitignore`. Validate required variables at startup. Never log, send to the model, or expose secrets to client-side code.

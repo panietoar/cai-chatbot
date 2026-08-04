@@ -77,7 +77,7 @@ From repository inspection on 2026-08-04:
 
 ### Environment
 
-- [.env.example](.env.example): Specifies `ANTHROPIC_API_KEY` and `ANTHROPIC_MODEL`
+- [.env.example](.env.example): Specifies `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` (migrated from Anthropic in P7-S1)
 
 ## Decisions and assumptions
 
@@ -296,7 +296,7 @@ Each test must assert:
 
 After implementation:
 
-1. Start dev server with valid `ANTHROPIC_API_KEY`
+1. Start dev server with valid `OPENROUTER_API_KEY`
 2. Send a supported question (e.g., "What does Cadre AI do?") → verify grounded response
 3. Send an unsupported question (e.g., "What is the capital of France?") → verify fallback message
 4. Check server logs for structured JSON output with request IDs and durations
@@ -324,7 +324,7 @@ Expected results:
 
 ### Resolved for this story
 
-- **Decision D5 (Anthropic model)**: Implementation references model through `getProviderConfig()` which reads from `ANTHROPIC_MODEL` env var; no hardcoded model ID in orchestration
+- **Decision D5 (LLM model)**: Implementation references model through `getProviderConfig()` which reads from `OPENROUTER_MODEL` env var (migrated from `ANTHROPIC_MODEL` in P7-S1); no hardcoded model ID in orchestration
 - **Request ID format**: Using Node.js `crypto.randomUUID()` (available since Node 14.17, well before required Node 20+)
 - **Logging format**: Consistent with existing provider structured logging
 - **History limit enforcement**: Already enforced by validation layer (max 10 turns)

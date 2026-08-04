@@ -26,7 +26,7 @@ Apply this style when producing:
 
 **Good:**
 > ### Must Fix
-> - `src/app/api/chat/route.ts:42` — `process.env.ANTHROPIC_API_KEY` logged in catch block. Remove immediately.
+> - `src/app/api/chat/route.ts:42` — `process.env.OPENROUTER_API_KEY` logged in catch block. Remove immediately.
 >
 > ### Verdict
 > **REQUEST CHANGES**

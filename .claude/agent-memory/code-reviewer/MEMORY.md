@@ -11,7 +11,7 @@ Claude Code maintains this project-scoped memory for the `code-reviewer` agent. 
 - No CRM integrations.
 - No real calendar booking integrations.
 - Single bounded assistant — no multi-agent orchestration in the main API route.
-- `ANTHROPIC_API_KEY` must never appear outside `src/lib/llm/` or `src/app/api/`.
+- `OPENROUTER_API_KEY` must never appear outside `src/lib/llm/` or `src/app/api/`.
 
 ## Approved Architecture Boundaries
 
