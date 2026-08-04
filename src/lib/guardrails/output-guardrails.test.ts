@@ -27,7 +27,7 @@ describe("Output Guardrails — P4-S3", () => {
 
     it("should pass a valid response with an approved URL", () => {
       const text =
-        "You can book a strategy call to discuss your needs. Visit https://example.com/placeholder-strategy-call for more details.";
+        "You can book a strategy call to discuss your needs. Visit https://www.cadreai.com/contact for more details.";
       const result = checkOutputGuardrails(text);
       expect(result.safe).toBe(true);
       expect(result.reason).toBeUndefined();
@@ -72,7 +72,7 @@ describe("Output Guardrails — P4-S3", () => {
 
     it("should pass a response with only approved URLs", () => {
       const text =
-        "Book a call at https://example.com/placeholder-strategy-call and learn more.";
+        "Book a call at https://www.cadreai.com/contact and learn more.";
       const result = checkOutputGuardrails(text);
       expect(result.safe).toBe(true);
     });

@@ -360,7 +360,7 @@ describe("checkRetrievalGuardrails", () => {
 
     it("should accept entry with approved URL from allowlist", () => {
       const entry = createValidEntry({
-        approvedUrl: "https://example.com/placeholder-strategy-call",
+        approvedUrl: "https://www.cadreai.com/contact",
       });
       const result = checkRetrievalGuardrails(
         createRetrievalResult([entry]),

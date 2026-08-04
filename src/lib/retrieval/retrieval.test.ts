@@ -125,20 +125,20 @@ describe("scoreEntry", () => {
 
 describe("retrieveKnowledge", () => {
   describe("basic retrieval", () => {
-    it("returns placeholder company entry for company overview query", () => {
+    it("returns company entry for company overview query", () => {
       const result = retrieveKnowledge("company overview");
 
       expect(result.matches.length).toBeGreaterThan(0);
-      expect(result.matches[0].entry.id).toBe("placeholder-company-overview");
+      expect(result.matches[0].entry.id).toBe("company-overview");
       expect(result.matches[0].score).toBeGreaterThan(0);
     });
 
-    it("returns placeholder escalation entry for help contact query", () => {
+    it("returns escalation entry for help contact query", () => {
       const result = retrieveKnowledge("help contact");
 
       expect(result.matches.length).toBeGreaterThan(0);
       const escalationMatch = result.matches.find(
-        (m) => m.entry.id === "placeholder-escalation"
+        (m) => m.entry.id === "unsupported-question-escalation"
       );
       expect(escalationMatch).toBeDefined();
       expect(escalationMatch!.score).toBeGreaterThan(0);
@@ -159,7 +159,7 @@ describe("retrieveKnowledge", () => {
 
   describe("threshold filtering", () => {
     it("returns empty results when query has no matches", () => {
-      const result = retrieveKnowledge("completely unrelated query xyzabc");
+      const result = retrieveKnowledge("xyzqwerty123nonsense");
 
       expect(result.matches).toEqual([]);
       expect(result.metadata.matchedCount).toBe(0);
@@ -256,7 +256,7 @@ describe("retrieveKnowledge", () => {
       const result = retrieveKnowledge(longQuery);
 
       // Should still work, matching on keywords present
-      expect(result.metadata.totalEntries).toBe(2); // Placeholder corpus size
+      expect(result.metadata.totalEntries).toBe(25); // Current corpus size
     });
   });
 
@@ -264,7 +264,7 @@ describe("retrieveKnowledge", () => {
     it("includes correct totalEntries count", () => {
       const result = retrieveKnowledge("company");
 
-      expect(result.metadata.totalEntries).toBe(2); // Placeholder corpus
+      expect(result.metadata.totalEntries).toBe(25); // Current corpus
     });
 
     it("includes correct matchedCount", () => {
@@ -301,14 +301,15 @@ describe("retrieveKnowledge", () => {
 
   describe("paraphrase detection", () => {
     it("matches paraphrased question via keywords", () => {
-      // "help me contact Cadre" should match escalation entry with keywords "help", "contact"
+      // "help me contact Cadre" should match contact-related entries
       const result = retrieveKnowledge("help me contact cadre");
 
-      const escalationMatch = result.matches.find(
-        (m) => m.entry.id === "placeholder-escalation"
+      // Should match contact-information or strategy-call entries
+      const contactMatch = result.matches.find(
+        (m) => m.entry.id === "contact-information" || m.entry.id === "strategy-call"
       );
-      expect(escalationMatch).toBeDefined();
-      expect(escalationMatch!.score).toBeGreaterThan(0);
+      expect(contactMatch).toBeDefined();
+      expect(contactMatch!.score).toBeGreaterThan(0);
     });
   });
 
