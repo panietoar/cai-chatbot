@@ -23,7 +23,7 @@ describe("validateKnowledgeEntry", () => {
       const entry = {
         ...validEntry,
         actionGuidance: "Test action guidance",
-        approvedUrl: "https://example.com/placeholder-strategy-call",
+        approvedUrl: "https://www.cadreai.com/contact",
         effectiveDate: "2026-08-04T00:00:00Z",
       };
 
@@ -41,7 +41,7 @@ describe("validateKnowledgeEntry", () => {
     it("accepts a valid entry with approved URL", () => {
       const entry = {
         ...validEntry,
-        approvedUrl: "https://example.com/placeholder-strategy-call",
+        approvedUrl: "https://www.cadreai.com/contact",
       };
 
       const result = validateKnowledgeEntry(entry);

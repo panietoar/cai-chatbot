@@ -343,7 +343,7 @@ Acceptance evidence:
 
 - The UI uses only the documented API contract.
 - Keyboard submission and focus behavior work.
-- Provider/internal details never appear in errors.
+- Provider/internal details never appear   in errors.
 - Desktop and mobile layouts are usable.
 
 Dependencies: P4-S4.

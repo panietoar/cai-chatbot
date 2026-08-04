@@ -20,12 +20,13 @@ describe("/api/health", () => {
 });
 
 describe("Home page", () => {
-  it("renders Cadre shell purpose and limitations", () => {
+  it("renders Cadre AI Support Assistant chat interface", () => {
     const html = renderToString(<Home />);
 
-    expect(html).toContain("Welcome to Cadre support insights");
-    expect(html).toContain("This site provides a simple public shell describing Cadre’s AI support capabilities.");
-    expect(html).toContain("What it cannot do yet");
-    expect(html).toContain("Answer private account questions or access client data.");
+    expect(html).toContain("Cadre AI Support Assistant");
+    expect(html).toContain("Ask questions about Cadre");
+    expect(html).toContain("AI services");
+    expect(html).toContain("This assistant cannot answer private account");
+    expect(html).toContain("chat-interface");
   });
 });
