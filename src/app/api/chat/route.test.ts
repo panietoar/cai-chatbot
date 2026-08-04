@@ -38,6 +38,8 @@ describe("POST /api/chat", () => {
     // Mock getProviderConfig to avoid environment variable errors in tests
     vi.spyOn(config, "getProviderConfig").mockReturnValue({
       model: "claude-3-5-sonnet-20241022",
+      siteUrl: "",
+      appName: "Cadre AI Support Chatbot",
       validatedAt: new Date().toISOString(),
     });
   });

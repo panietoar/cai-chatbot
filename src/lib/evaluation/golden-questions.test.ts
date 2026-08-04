@@ -67,6 +67,8 @@ describe("Golden Question Evaluations", () => {
     // Mock provider config to avoid environment variable errors
     vi.spyOn(config, "getProviderConfig").mockReturnValue({
       model: "claude-3-5-sonnet-20241022",
+      siteUrl: "",
+      appName: "Cadre AI Support Chatbot",
       validatedAt: new Date().toISOString(),
     });
   });

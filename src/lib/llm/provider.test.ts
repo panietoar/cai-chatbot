@@ -453,18 +453,25 @@ describe("provider.ts - generateResponse", () => {
     expect(configModule.getProviderConfig).toHaveBeenCalled();
     expect(configModule.getApiKey).toHaveBeenCalled();
   });
-});
+
+  // ========================================================================
+  // Additional Response Tests
+  // ========================================================================
 
   it("should capture and return accurate token counts", async () => {
-    const mockCreate = vi.fn().mockResolvedValue({
-      content: [{ type: "text", text: "Response" }],
-      stop_reason: "end_turn",
-      usage: { input_tokens: 1234, output_tokens: 5678 },
-    });
-
-    vi.mocked(Anthropic).mockImplementation(() => ({
-      messages: { create: mockCreate },
-    } as unknown as Anthropic));
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        choices: [{
+          message: { content: "Response" },
+          finish_reason: "stop",
+        }],
+        usage: {
+          prompt_tokens: 1234,
+          completion_tokens: 5678,
+        },
+      }),
+    } as Response);
 
     const request: ProviderRequest = {
       systemPrompt: "System",
@@ -486,15 +493,10 @@ describe("provider.ts - generateResponse", () => {
   // ========================================================================
 
   it("should handle multiple calls with different requestIds", async () => {
-    const mockCreate = vi.fn().mockResolvedValue({
-      content: [{ type: "text", text: "Response" }],
-      stop_reason: "end_turn",
-      usage: { input_tokens: 10, output_tokens: 20 },
-    });
-
-    vi.mocked(Anthropic).mockImplementation(() => ({
-      messages: { create: mockCreate },
-    } as unknown as Anthropic));
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => createOpenRouterSuccessResponse("Response", "stop"),
+    } as Response);
 
     const request1: ProviderRequest = {
       systemPrompt: "System",
@@ -533,13 +535,11 @@ describe("provider.ts - generateResponse", () => {
   // ========================================================================
 
   it("should include user-safe message in error response", async () => {
-    const mockCreate = vi.fn().mockRejectedValue(
-      createMockAPIError("Unauthorized", 401)
-    );
-
-    vi.mocked(Anthropic).mockImplementation(() => ({
-      messages: { create: mockCreate },
-    } as unknown as Anthropic));
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: async () => "Unauthorized",
+    } as Response);
 
     const request: ProviderRequest = {
       systemPrompt: "System",
@@ -564,13 +564,9 @@ describe("provider.ts - generateResponse", () => {
   // ========================================================================
 
   it("should never throw, always return a ProviderResponse", async () => {
-    const mockCreate = vi.fn().mockRejectedValue(
+    fetchMock.mockRejectedValue(
       new Error("Catastrophic failure")
     );
-
-    vi.mocked(Anthropic).mockImplementation(() => ({
-      messages: { create: mockCreate },
-    } as unknown as Anthropic));
 
     const request: ProviderRequest = {
       systemPrompt: "System",
