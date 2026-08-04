@@ -1,6 +1,6 @@
 # P3-S3 — Retrieval Guardrails and Safe Fallback
 
-Status: DRAFT
+Status: APPROVED
 Plan phase: P3
 
 ## Outcome
