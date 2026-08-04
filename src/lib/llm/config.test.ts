@@ -24,14 +24,14 @@ describe("config.ts - environment variable validation", () => {
   });
 
   it("should export functions that validate environment", async () => {
-    process.env.ANTHROPIC_MODEL = "claude-3-5-haiku-20241022";
+    process.env.ANTHROPIC_MODEL = "claude-haiku-4-5-20251001";
     process.env.ANTHROPIC_API_KEY = "test-key-123";
 
     // Dynamically import the module to capture the fresh environment
     const config = await import("./config");
 
     const cfg = config.getProviderConfig();
-    expect(cfg.model).toBe("claude-3-5-haiku-20241022");
+    expect(cfg.model).toBe("claude-haiku-4-5-20251001");
     expect(cfg.validatedAt).toBeDefined();
   });
 
@@ -48,7 +48,7 @@ describe("config.ts - environment variable validation", () => {
   });
 
   it("should throw if ANTHROPIC_API_KEY is missing", async () => {
-    process.env.ANTHROPIC_MODEL = "claude-3-5-haiku-20241022";
+    process.env.ANTHROPIC_MODEL = "claude-haiku-4-5-20251001";
     delete process.env.ANTHROPIC_API_KEY;
 
     // Dynamically import the module to capture the fresh environment

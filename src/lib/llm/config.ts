@@ -29,7 +29,7 @@ function initializeConfig(): void {
   if (!model) {
     throw new Error(
       "Configuration error: ANTHROPIC_MODEL environment variable is missing or empty. " +
-        "Set it to a valid Anthropic model identifier (e.g., claude-3-5-haiku-20241022)."
+        "Set it to a valid Anthropic model identifier (e.g., claude-haiku-4-5-20251001)."
     );
   }
 

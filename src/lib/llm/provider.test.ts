@@ -69,7 +69,7 @@ beforeEach(() => {
 
   // Default config mock
   vi.mocked(configModule.getProviderConfig).mockReturnValue({
-    model: "claude-3-5-haiku-20241022",
+    model: "claude-haiku-4-5-20251001",
     validatedAt: new Date().toISOString(),
   });
 
@@ -203,7 +203,7 @@ describe("provider.ts - generateResponse", () => {
     expect(typeof logCall).toBe("string");
 
     const logData = JSON.parse(logCall as string);
-    expect(logData.model).toBe("claude-3-5-haiku-20241022");
+    expect(logData.model).toBe("claude-haiku-4-5-20251001");
     expect(logData.inputTokens).toBe(100);
     expect(logData.outputTokens).toBe(50);
     expect(logData.finishReason).toBe("end_turn");
