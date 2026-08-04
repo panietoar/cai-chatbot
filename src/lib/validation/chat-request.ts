@@ -116,7 +116,7 @@ function validateTurn(
     return null;
   }
 
-  addUnknownFieldIssues(value, ["userMessage", "assistantMessage"], path, issues);
+  addUnknownFieldIssues(value, ["userMessage", "assistantMessage", "actions"], path, issues);
 
   const hasUserMessage = Object.prototype.hasOwnProperty.call(value, "userMessage");
   const hasAssistantMessage = Object.prototype.hasOwnProperty.call(
