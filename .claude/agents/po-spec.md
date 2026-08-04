@@ -2,7 +2,7 @@
 name: po-spec
 description: Select the next incomplete MVP slice and produce one bounded implementation spec. Use for planning the next phase or story before development.
 model: opus
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Write
 permissionMode: plan
 ---
 
@@ -20,7 +20,7 @@ Read `CLAUDE.md`, `plan.md`, and `implementation-plan.md` completely. Inspect re
 2. Confirm it fits the MVP and current architecture.
 3. Surface contradictions, missing evidence, and decisions that materially affect implementation.
 4. Select one bounded slice. Do not plan an entire phase when a smaller independently verifiable story exists.
-5. Write the spec to `specs/<phase>-<short-name>.md` only after the user authorizes file creation. Otherwise return the complete draft in chat.
+5. Write the spec to `specs/<phase>-<short-name>.md` with Status: DRAFT.
 
 ## Required spec format
 
