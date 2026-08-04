@@ -348,21 +348,6 @@ Acceptance evidence:
 
 Dependencies: P4-S4.
 
-#### P5-S2 — Add purpose, limitations, and suggested questions
-
-Outcome:
-
-- Explain what the assistant can answer and that it uses verified Cadre information.
-- Add suggested questions covering the approved support topics.
-
-Acceptance evidence:
-
-- Suggestions populate or submit accessibly and do not promise unsupported capabilities.
-- Purpose and limitations remain visible without overwhelming the chat.
-- Suggested questions match existing knowledge entries.
-
-Dependencies: P5-S1, P3-S1.
-
 #### P5-S3 — Render approved actions safely
 
 Outcome:
