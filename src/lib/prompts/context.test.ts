@@ -266,7 +266,8 @@ describe("Context Assembly — Invalid Inputs", () => {
   it("should reject null systemPromptVersion", () => {
     const request = createValidRequest();
     const mutableRequest = request as Partial<ContextAssemblyRequest> & { systemPromptVersion: unknown };
-    mutableRequest.systemPromptVersion = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mutableRequest as any).systemPromptVersion = null;
     const result = assembleContext(request);
 
     expect("reason" in result).toBe(true);
@@ -287,7 +288,8 @@ describe("Context Assembly — Invalid Inputs", () => {
   it("should reject null currentQuery", () => {
     const request = createValidRequest();
     const mutableRequest = request as Partial<ContextAssemblyRequest> & { currentQuery: unknown };
-    mutableRequest.currentQuery = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mutableRequest as any).currentQuery = null;
     const result = assembleContext(request);
 
     expect("reason" in result).toBe(true);
@@ -310,7 +312,8 @@ describe("Context Assembly — Invalid Inputs", () => {
   it("should reject null knowledge", () => {
     const request = createValidRequest();
     const mutableRequest = request as Partial<ContextAssemblyRequest> & { knowledge: unknown };
-    mutableRequest.knowledge = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mutableRequest as any).knowledge = null;
     const result = assembleContext(request);
 
     expect("reason" in result).toBe(true);
@@ -322,7 +325,8 @@ describe("Context Assembly — Invalid Inputs", () => {
   it("should reject null conversationHistory", () => {
     const request = createValidRequest();
     const mutableRequest = request as Partial<ContextAssemblyRequest> & { conversationHistory: unknown };
-    mutableRequest.conversationHistory = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mutableRequest as any).conversationHistory = null;
     const result = assembleContext(request);
 
     expect("reason" in result).toBe(true);
@@ -351,7 +355,8 @@ describe("Context Assembly — Invalid Inputs", () => {
   it("should reject null requestId", () => {
     const request = createValidRequest();
     const mutableRequest = request as Partial<ContextAssemblyRequest> & { requestId: unknown };
-    mutableRequest.requestId = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mutableRequest as any).requestId = null;
     const result = assembleContext(request);
 
     expect("reason" in result).toBe(true);
@@ -363,7 +368,8 @@ describe("Context Assembly — Invalid Inputs", () => {
   it("should not raise exceptions; return error objects instead", () => {
     const request = createValidRequest();
     const mutableRequest = request as Partial<ContextAssemblyRequest> & { currentQuery: unknown };
-    mutableRequest.currentQuery = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (mutableRequest as any).currentQuery = null;
 
     expect(() => assembleContext(request)).not.toThrow();
     const result = assembleContext(request);
