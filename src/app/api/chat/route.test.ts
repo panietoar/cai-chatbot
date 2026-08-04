@@ -868,4 +868,626 @@ describe("POST /api/chat", () => {
       );
     });
   });
+
+  describe("Action extraction", () => {
+    it("includes actions when knowledge entries have actionGuidance and approvedUrl", async () => {
+      // Mock retrieval to return entry with action
+      vi.spyOn(retrieval, "retrieveKnowledge").mockReturnValue({
+        matches: [
+          {
+            entry: {
+              id: "contact-info",
+              topic: "Contact Cadre",
+              content: "Book a strategy call to discuss your AI needs.",
+              keywords: ["contact", "call", "strategy"],
+              approvalNote: "Approved 2026-08-04",
+              actionGuidance: "Book a strategy call",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+              effectiveDate: "2026-08-04",
+            },
+            score: 10,
+          },
+        ],
+        metadata: {
+          totalEntries: 10,
+          matchedCount: 1,
+          threshold: 1,
+          maxResults: 3,
+        },
+      });
+
+      vi.spyOn(retrievalGuardrails, "checkRetrievalGuardrails").mockReturnValue({
+        safe: true,
+        validEntries: [
+          {
+            entry: {
+              id: "contact-info",
+              topic: "Contact Cadre",
+              content: "Book a strategy call to discuss your AI needs.",
+              keywords: ["contact", "call", "strategy"],
+              approvalNote: "Approved 2026-08-04",
+              actionGuidance: "Book a strategy call",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+              effectiveDate: "2026-08-04",
+            },
+            score: 10,
+          },
+        ],
+      });
+
+      vi.spyOn(context, "assembleContext").mockReturnValue({
+        systemPrompt: "System prompt",
+        promptVersion: "v1",
+        messages: [{ role: "user", content: "How do I contact Cadre?" }],
+        metadata: {
+          knowledgeIds: ["contact-info"],
+          historyTurns: 0,
+          requestId: expect.any(String),
+          assembledAt: expect.any(String),
+        },
+      });
+
+      vi.spyOn(provider, "generateResponse").mockResolvedValue({
+        type: "success",
+        text: "You can book a strategy call.",
+        finishReason: "stop",
+        inputTokens: 100,
+        outputTokens: 20,
+      });
+
+      vi.spyOn(outputGuardrails, "checkOutputGuardrails").mockReturnValue({
+        safe: true,
+      });
+
+      const request = createMockRequest({
+        message: "How do I contact Cadre?",
+        history: [],
+      });
+
+      const response = await POST(request);
+      const { status, body } = await parseResponse(response);
+
+      expect(status).toBe(200);
+      expect(body).toHaveProperty("message");
+      expect(body).toHaveProperty("actions");
+      expect(body.actions).toBeInstanceOf(Array);
+      expect(body.actions).toHaveLength(1);
+      expect(body.actions[0]).toEqual({
+        label: "Book a strategy call",
+        url: "https://www.cadreai.com/contact",
+      });
+    });
+
+    it("deduplicates actions with the same URL", async () => {
+      vi.spyOn(retrieval, "retrieveKnowledge").mockReturnValue({
+        matches: [
+          {
+            entry: {
+              id: "contact-1",
+              topic: "Contact",
+              content: "Contact us",
+              keywords: ["contact"],
+              approvalNote: "Approved",
+              actionGuidance: "Contact us",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+          {
+            entry: {
+              id: "contact-2",
+              topic: "Strategy",
+              content: "Book a call",
+              keywords: ["call"],
+              approvalNote: "Approved",
+              actionGuidance: "Book a strategy call",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+            },
+            score: 9,
+          },
+        ],
+        metadata: {
+          totalEntries: 10,
+          matchedCount: 2,
+          threshold: 1,
+          maxResults: 3,
+        },
+      });
+
+      vi.spyOn(retrievalGuardrails, "checkRetrievalGuardrails").mockReturnValue({
+        safe: true,
+        validEntries: [
+          {
+            entry: {
+              id: "contact-1",
+              topic: "Contact",
+              content: "Contact us",
+              keywords: ["contact"],
+              approvalNote: "Approved",
+              actionGuidance: "Contact us",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+          {
+            entry: {
+              id: "contact-2",
+              topic: "Strategy",
+              content: "Book a call",
+              keywords: ["call"],
+              approvalNote: "Approved",
+              actionGuidance: "Book a strategy call",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+            },
+            score: 9,
+          },
+        ],
+      });
+
+      vi.spyOn(context, "assembleContext").mockReturnValue({
+        systemPrompt: "System prompt",
+        promptVersion: "v1",
+        messages: [{ role: "user", content: "Test" }],
+        metadata: {
+          knowledgeIds: ["contact-1", "contact-2"],
+          historyTurns: 0,
+          requestId: expect.any(String),
+          assembledAt: expect.any(String),
+        },
+      });
+
+      vi.spyOn(provider, "generateResponse").mockResolvedValue({
+        type: "success",
+        text: "Response",
+        finishReason: "stop",
+        inputTokens: 100,
+        outputTokens: 20,
+      });
+
+      vi.spyOn(outputGuardrails, "checkOutputGuardrails").mockReturnValue({
+        safe: true,
+      });
+
+      const request = createMockRequest({
+        message: "Test",
+        history: [],
+      });
+
+      const response = await POST(request);
+      const { status, body } = await parseResponse(response);
+
+      expect(status).toBe(200);
+      expect(body.actions).toHaveLength(1);
+      expect(body.actions[0].label).toBe("Contact us"); // First occurrence
+      expect(body.actions[0].url).toBe("https://www.cadreai.com/contact");
+    });
+
+    it("limits actions to maximum of 3", async () => {
+      const mockEntries = [
+        {
+          id: "action-1",
+          topic: "Action 1",
+          content: "Content 1",
+          keywords: ["a"],
+          approvalNote: "Approved",
+          actionGuidance: "Action 1",
+          approvedUrl: "https://www.cadreai.com/contact",
+          schemaVersion: "v1" as const,
+        },
+        {
+          id: "action-2",
+          topic: "Action 2",
+          content: "Content 2",
+          keywords: ["b"],
+          approvalNote: "Approved",
+          actionGuidance: "Action 2",
+          approvedUrl: "https://send.reignmakerapp.com/login",
+          schemaVersion: "v1" as const,
+        },
+        {
+          id: "action-3",
+          topic: "Action 3",
+          content: "Content 3",
+          keywords: ["c"],
+          approvalNote: "Approved",
+          actionGuidance: "Action 3",
+          approvedUrl: "https://www.cadreai.com/",
+          schemaVersion: "v1" as const,
+        },
+        {
+          id: "action-4",
+          topic: "Action 4",
+          content: "Content 4",
+          keywords: ["d"],
+          approvalNote: "Approved",
+          actionGuidance: "Action 4",
+          approvedUrl: "https://www.cadreai.com/strategy",
+          schemaVersion: "v1" as const,
+        },
+      ];
+
+      vi.spyOn(retrieval, "retrieveKnowledge").mockReturnValue({
+        matches: mockEntries.map((entry, index) => ({
+          entry,
+          score: 10 - index,
+        })),
+        metadata: {
+          totalEntries: 10,
+          matchedCount: 4,
+          threshold: 1,
+          maxResults: 3,
+        },
+      });
+
+      vi.spyOn(retrievalGuardrails, "checkRetrievalGuardrails").mockReturnValue({
+        safe: true,
+        validEntries: mockEntries.map((entry, index) => ({
+          entry,
+          score: 10 - index,
+        })),
+      });
+
+      vi.spyOn(context, "assembleContext").mockReturnValue({
+        systemPrompt: "System prompt",
+        promptVersion: "v1",
+        messages: [{ role: "user", content: "Test" }],
+        metadata: {
+          knowledgeIds: mockEntries.map((e) => e.id),
+          historyTurns: 0,
+          requestId: expect.any(String),
+          assembledAt: expect.any(String),
+        },
+      });
+
+      vi.spyOn(provider, "generateResponse").mockResolvedValue({
+        type: "success",
+        text: "Response",
+        finishReason: "stop",
+        inputTokens: 100,
+        outputTokens: 20,
+      });
+
+      vi.spyOn(outputGuardrails, "checkOutputGuardrails").mockReturnValue({
+        safe: true,
+      });
+
+      const request = createMockRequest({
+        message: "Test",
+        history: [],
+      });
+
+      const response = await POST(request);
+      const { status, body } = await parseResponse(response);
+
+      expect(status).toBe(200);
+      expect(body.actions).toHaveLength(3); // Limited to 3
+      expect(body.actions[0].label).toBe("Action 1");
+      expect(body.actions[1].label).toBe("Action 2");
+      expect(body.actions[2].label).toBe("Action 3");
+    });
+
+    it("omits actions when approvedUrl is not in allowlist", async () => {
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      vi.spyOn(retrieval, "retrieveKnowledge").mockReturnValue({
+        matches: [
+          {
+            entry: {
+              id: "bad-action",
+              topic: "Bad Action",
+              content: "Content",
+              keywords: ["bad"],
+              approvalNote: "Approved",
+              actionGuidance: "Bad action",
+              approvedUrl: "https://evil.com/phishing",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+        metadata: {
+          totalEntries: 10,
+          matchedCount: 1,
+          threshold: 1,
+          maxResults: 3,
+        },
+      });
+
+      vi.spyOn(retrievalGuardrails, "checkRetrievalGuardrails").mockReturnValue({
+        safe: true,
+        validEntries: [
+          {
+            entry: {
+              id: "bad-action",
+              topic: "Bad Action",
+              content: "Content",
+              keywords: ["bad"],
+              approvalNote: "Approved",
+              actionGuidance: "Bad action",
+              approvedUrl: "https://evil.com/phishing",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+      });
+
+      vi.spyOn(context, "assembleContext").mockReturnValue({
+        systemPrompt: "System prompt",
+        promptVersion: "v1",
+        messages: [{ role: "user", content: "Test" }],
+        metadata: {
+          knowledgeIds: ["bad-action"],
+          historyTurns: 0,
+          requestId: expect.any(String),
+          assembledAt: expect.any(String),
+        },
+      });
+
+      vi.spyOn(provider, "generateResponse").mockResolvedValue({
+        type: "success",
+        text: "Response",
+        finishReason: "stop",
+        inputTokens: 100,
+        outputTokens: 20,
+      });
+
+      vi.spyOn(outputGuardrails, "checkOutputGuardrails").mockReturnValue({
+        safe: true,
+      });
+
+      const request = createMockRequest({
+        message: "Test",
+        history: [],
+      });
+
+      const response = await POST(request);
+      const { status, body } = await parseResponse(response);
+
+      expect(status).toBe(200);
+      expect(body).not.toHaveProperty("actions"); // Actions omitted
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("non-approved URL")
+      );
+    });
+
+    it("omits actions when actionGuidance is missing", async () => {
+      vi.spyOn(retrieval, "retrieveKnowledge").mockReturnValue({
+        matches: [
+          {
+            entry: {
+              id: "no-guidance",
+              topic: "No Guidance",
+              content: "Content",
+              keywords: ["test"],
+              approvalNote: "Approved",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+        metadata: {
+          totalEntries: 10,
+          matchedCount: 1,
+          threshold: 1,
+          maxResults: 3,
+        },
+      });
+
+      vi.spyOn(retrievalGuardrails, "checkRetrievalGuardrails").mockReturnValue({
+        safe: true,
+        validEntries: [
+          {
+            entry: {
+              id: "no-guidance",
+              topic: "No Guidance",
+              content: "Content",
+              keywords: ["test"],
+              approvalNote: "Approved",
+              approvedUrl: "https://www.cadreai.com/contact",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+      });
+
+      vi.spyOn(context, "assembleContext").mockReturnValue({
+        systemPrompt: "System prompt",
+        promptVersion: "v1",
+        messages: [{ role: "user", content: "Test" }],
+        metadata: {
+          knowledgeIds: ["no-guidance"],
+          historyTurns: 0,
+          requestId: expect.any(String),
+          assembledAt: expect.any(String),
+        },
+      });
+
+      vi.spyOn(provider, "generateResponse").mockResolvedValue({
+        type: "success",
+        text: "Response",
+        finishReason: "stop",
+        inputTokens: 100,
+        outputTokens: 20,
+      });
+
+      vi.spyOn(outputGuardrails, "checkOutputGuardrails").mockReturnValue({
+        safe: true,
+      });
+
+      const request = createMockRequest({
+        message: "Test",
+        history: [],
+      });
+
+      const response = await POST(request);
+      const { status, body } = await parseResponse(response);
+
+      expect(status).toBe(200);
+      expect(body).not.toHaveProperty("actions");
+    });
+
+    it("omits actions when approvedUrl is missing", async () => {
+      vi.spyOn(retrieval, "retrieveKnowledge").mockReturnValue({
+        matches: [
+          {
+            entry: {
+              id: "no-url",
+              topic: "No URL",
+              content: "Content",
+              keywords: ["test"],
+              approvalNote: "Approved",
+              actionGuidance: "Click here",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+        metadata: {
+          totalEntries: 10,
+          matchedCount: 1,
+          threshold: 1,
+          maxResults: 3,
+        },
+      });
+
+      vi.spyOn(retrievalGuardrails, "checkRetrievalGuardrails").mockReturnValue({
+        safe: true,
+        validEntries: [
+          {
+            entry: {
+              id: "no-url",
+              topic: "No URL",
+              content: "Content",
+              keywords: ["test"],
+              approvalNote: "Approved",
+              actionGuidance: "Click here",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+      });
+
+      vi.spyOn(context, "assembleContext").mockReturnValue({
+        systemPrompt: "System prompt",
+        promptVersion: "v1",
+        messages: [{ role: "user", content: "Test" }],
+        metadata: {
+          knowledgeIds: ["no-url"],
+          historyTurns: 0,
+          requestId: expect.any(String),
+          assembledAt: expect.any(String),
+        },
+      });
+
+      vi.spyOn(provider, "generateResponse").mockResolvedValue({
+        type: "success",
+        text: "Response",
+        finishReason: "stop",
+        inputTokens: 100,
+        outputTokens: 20,
+      });
+
+      vi.spyOn(outputGuardrails, "checkOutputGuardrails").mockReturnValue({
+        safe: true,
+      });
+
+      const request = createMockRequest({
+        message: "Test",
+        history: [],
+      });
+
+      const response = await POST(request);
+      const { status, body } = await parseResponse(response);
+
+      expect(status).toBe(200);
+      expect(body).not.toHaveProperty("actions");
+    });
+
+    it("response without actions is valid (actions optional)", async () => {
+      vi.spyOn(retrieval, "retrieveKnowledge").mockReturnValue({
+        matches: [
+          {
+            entry: {
+              id: "info-only",
+              topic: "General Info",
+              content: "Cadre AI provides services.",
+              keywords: ["cadre"],
+              approvalNote: "Approved",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+        metadata: {
+          totalEntries: 10,
+          matchedCount: 1,
+          threshold: 1,
+          maxResults: 3,
+        },
+      });
+
+      vi.spyOn(retrievalGuardrails, "checkRetrievalGuardrails").mockReturnValue({
+        safe: true,
+        validEntries: [
+          {
+            entry: {
+              id: "info-only",
+              topic: "General Info",
+              content: "Cadre AI provides services.",
+              keywords: ["cadre"],
+              approvalNote: "Approved",
+              schemaVersion: "v1",
+            },
+            score: 10,
+          },
+        ],
+      });
+
+      vi.spyOn(context, "assembleContext").mockReturnValue({
+        systemPrompt: "System prompt",
+        promptVersion: "v1",
+        messages: [{ role: "user", content: "What does Cadre do?" }],
+        metadata: {
+          knowledgeIds: ["info-only"],
+          historyTurns: 0,
+          requestId: expect.any(String),
+          assembledAt: expect.any(String),
+        },
+      });
+
+      vi.spyOn(provider, "generateResponse").mockResolvedValue({
+        type: "success",
+        text: "Cadre AI provides services.",
+        finishReason: "stop",
+        inputTokens: 100,
+        outputTokens: 20,
+      });
+
+      vi.spyOn(outputGuardrails, "checkOutputGuardrails").mockReturnValue({
+        safe: true,
+      });
+
+      const request = createMockRequest({
+        message: "What does Cadre do?",
+        history: [],
+      });
+
+      const response = await POST(request);
+      const { status, body } = await parseResponse(response);
+
+      expect(status).toBe(200);
+      expect(body).toHaveProperty("message");
+      expect(body).not.toHaveProperty("actions"); // Optional, omitted when empty
+    });
+  });
 });

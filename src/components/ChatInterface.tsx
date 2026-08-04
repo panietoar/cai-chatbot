@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import SafeActionLink from "./SafeActionLink";
 import type {
   ChatTurn,
   ChatRequest,
@@ -12,6 +13,7 @@ import { CHAT_MAX_MESSAGE_LENGTH, CHAT_MAX_HISTORY_TURNS } from "../lib/chat/con
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  actions?: Array<{ label: string; url: string }>;
 }
 
 export default function ChatInterface() {
@@ -90,6 +92,7 @@ export default function ChatInterface() {
       const newTurn: ChatTurn = {
         userMessage: input,
         assistantMessage: successData.message,
+        actions: successData.actions,
       };
 
       // Update history
@@ -112,7 +115,11 @@ export default function ChatInterface() {
   const messages: ChatMessage[] = [];
   history.forEach((turn) => {
     messages.push({ role: "user", content: turn.userMessage });
-    messages.push({ role: "assistant", content: turn.assistantMessage });
+    messages.push({ 
+      role: "assistant", 
+      content: turn.assistantMessage,
+      actions: turn.actions,
+    });
   });
 
   const charCount = input.length;
@@ -152,6 +159,13 @@ export default function ChatInterface() {
           >
             <div className="message-label">{msg.role === "user" ? "You" : "Cadre"}</div>
             <div className="message-content">{msg.content}</div>
+            {msg.role === "assistant" && msg.actions && msg.actions.length > 0 && (
+              <div className="message-actions" aria-label="Available actions">
+                {msg.actions.map((action, actionIdx) => (
+                  <SafeActionLink key={actionIdx} label={action.label} url={action.url} />
+                ))}
+              </div>
+            )}
           </article>
         ))}
         {loading && (

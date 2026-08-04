@@ -9,7 +9,10 @@
 
 /**
  * Approved URLs that may appear in knowledge entries or responses.
- * Empty or minimal in MVP until D4 is resolved.
+ * 
+ * Decision D4 resolved on 2026-08-04:
+ * - Strategy call: https://www.cadreai.com/contact
+ * - Client portal: https://send.reignmakerapp.com/login
  */
 export const APPROVED_LINKS: readonly string[] = [
   "https://www.cadreai.com/",
@@ -19,6 +22,7 @@ export const APPROVED_LINKS: readonly string[] = [
   "https://www.cadreai.com/departments",
   "https://www.cadreai.com/contact",
   "https://www.cadreai.com/articles/ai-readiness-starts-with-your-data-not-the-model",
+  "https://send.reignmakerapp.com/login",
 ] as const;
 
 /**

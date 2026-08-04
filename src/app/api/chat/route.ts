@@ -14,6 +14,7 @@ import { assembleContext } from "../../../lib/prompts/context";
 import { generateResponse } from "../../../lib/llm/provider";
 import { checkOutputGuardrails } from "../../../lib/guardrails/output-guardrails";
 import { getProviderConfig } from "../../../lib/llm/config";
+import { isApprovedLink } from "../../../lib/knowledge/links";
 import type { ChatSuccessResponse, ChatErrorResponse } from "../../../lib/chat/contracts";
 import type { UserMessage } from "../../../lib/llm/provider";
 
@@ -109,6 +110,48 @@ function convertHistoryToMessages(
   }
 
   return messages;
+}
+
+// ============================================================================
+// Action Extraction
+// ============================================================================
+
+/**
+ * Extract server-approved action links from knowledge entries.
+ * 
+ * Only includes actions when both actionGuidance and approvedUrl are present
+ * and the URL is in the allowlist. Deduplicates by URL and limits to 3 maximum.
+ */
+function extractActions(
+  scoredEntries: Array<{ entry: { actionGuidance?: string; approvedUrl?: string }; score: number }>
+): Array<{ label: string; url: string }> {
+  const actionMap = new Map<string, string>();
+
+  for (const { entry } of scoredEntries) {
+    // Skip if either field is missing
+    if (!entry.actionGuidance || !entry.approvedUrl) {
+      continue;
+    }
+
+    // Defensive check: verify URL is in allowlist
+    if (!isApprovedLink(entry.approvedUrl)) {
+      console.warn(`Skipping action with non-approved URL: ${entry.approvedUrl}`);
+      continue;
+    }
+
+    // Deduplicate by URL (first occurrence wins)
+    if (!actionMap.has(entry.approvedUrl)) {
+      actionMap.set(entry.approvedUrl, entry.actionGuidance);
+    }
+
+    // Limit to 3 actions maximum
+    if (actionMap.size >= 3) {
+      break;
+    }
+  }
+
+  // Convert map to array of { label, url }
+  return Array.from(actionMap.entries()).map(([url, label]) => ({ label, url }));
 }
 
 // ============================================================================
@@ -284,6 +327,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Success Path
     // ========================================================================
 
+    // Extract actions from knowledge entries
+    const actions = extractActions(retrievalGuardrailResult.validEntries);
+
     const durationMs = Date.now() - startTime;
     logOrchestration({
       timestamp: new Date().toISOString(),
@@ -302,6 +348,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const successResponse: ChatSuccessResponse = {
       message: providerResponse.text,
+      ...(actions.length > 0 && { actions }),
     };
 
     return NextResponse.json(successResponse, { status: 200 });

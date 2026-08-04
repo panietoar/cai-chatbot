@@ -232,6 +232,49 @@ main.chat-interface {
   font-size: 0.95rem;
 }
 
+/* Action links container and buttons */
+.message-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.action-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1rem;
+  background: #ffffff;
+  color: #2563eb;
+  border: 1.5px solid #2563eb;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+}
+
+.action-link:hover {
+  background: #2563eb;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.action-link:active {
+  transform: translateY(0);
+}
+
+.action-link:focus {
+  outline: 3px solid #2563eb;
+  outline-offset: 3px;
+}
+
 .message-loading {
   align-items: flex-start;
   justify-content: center;
@@ -458,6 +501,17 @@ main.chat-interface {
   .message-user .message-content,
   .message-assistant .message-content {
     max-width: 95%;
+  }
+
+  /* Stack action buttons vertically on mobile */
+  .message-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .action-link {
+    width: 100%;
+    justify-content: center;
   }
 
   .chat-input-form {

@@ -4,6 +4,7 @@ export const CHAT_MAX_HISTORY_TURNS = 10;
 export interface ChatTurn {
   userMessage: string;
   assistantMessage: string;
+  actions?: Array<{ label: string; url: string }>;
 }
 
 export interface ChatRequest {
@@ -11,8 +12,14 @@ export interface ChatRequest {
   history: ChatTurn[];
 }
 
+/**
+ * Chat response with optional server-approved action links.
+ * Actions are extracted from knowledge entries and pre-validated against the allowlist.
+ */
 export interface ChatSuccessResponse {
   message: string;
+  /** Server-approved action links (e.g., "Book a strategy call") */
+  actions?: Array<{ label: string; url: string }>;
 }
 
 export type ChatErrorCode =
