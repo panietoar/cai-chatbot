@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
 import SafeActionLink from "./SafeActionLink";
 import type {
   ChatTurn,
@@ -158,7 +159,13 @@ export default function ChatInterface() {
             aria-label={`${msg.role === "user" ? "Your" : "Assistant"} message`}
           >
             <div className="message-label">{msg.role === "user" ? "You" : "Cadre"}</div>
-            <div className="message-content">{msg.content}</div>
+            <div className="message-content">
+              {msg.role === "assistant" ? (
+                <ReactMarkdown>{msg.content}</ReactMarkdown>
+              ) : (
+                msg.content
+              )}
+            </div>
             {msg.role === "assistant" && msg.actions && msg.actions.length > 0 && (
               <div className="message-actions" aria-label="Available actions">
                 {msg.actions.map((action, actionIdx) => (
