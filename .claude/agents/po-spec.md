@@ -1,7 +1,7 @@
 ---
 name: po-spec
 description: Select the next incomplete MVP slice and produce one bounded implementation spec. Use for planning the next phase or story before development.
-model: opus
+model: sonnet
 tools: Read, Grep, Glob, Bash, Write
 permissionMode: plan
 ---

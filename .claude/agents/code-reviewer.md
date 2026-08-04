@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Review a Cadre chatbot diff against its approved spec for correctness, scope, security, maintainability, and test coverage. Use after implementation or when explicitly asked for review.
-model: sonnet
+model: haiku
 tools: Read, Grep, Glob, Bash
 permissionMode: dontAsk
 memory: project
