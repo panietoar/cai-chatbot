@@ -558,7 +558,7 @@ export const KNOWLEDGE_CORPUS: readonly KnowledgeEntry[] = [
     id: "client-portal",
     topic: "Client Portal",
     content:
-      "Cadre AI provides a centralized portal that clients can use to track AI tools, agents, training, and results. The portal is intended to help clients stay aligned, maintain accountability, and understand which AI initiatives are producing value. The approved knowledge base does not contain a verified direct portal login URL or account-recovery procedure.",
+      "Cadre AI provides a centralized client portal for existing clients to track AI tools, agents, training progress, and implementation results. The portal helps clients stay aligned with their AI initiatives, maintain accountability across teams, and understand which AI projects are delivering value. Existing clients can access the portal by visiting the login page. If you need help setting up your portal account or have trouble accessing it, please contact Cadre support.",
     keywords: [
       "portal",
       "client portal",
@@ -578,12 +578,12 @@ export const KNOWLEDGE_CORPUS: readonly KnowledgeEntry[] = [
       "password reset",
     ],
     approvalNote:
-      "Portal capabilities are described on Cadre AI's official website. No direct portal URL or authentication procedure has been verified, so the chatbot must redirect access issues to Cadre.",
+      "Portal URL verified and approved on 2026-08-04. Portal capabilities are described on Cadre AI's official website. For account setup and technical support, clients should contact Cadre directly.",
     actionGuidance:
-      "Contact Us About Portal Access",
-    approvedUrl: "https://www.cadreai.com/contact",
+      "Access the Client Portal",
+    approvedUrl: "https://send.reignmakerapp.com/login",
     schemaVersion: "v1",
-    effectiveDate: "2026-08-04T00:00:00Z",
+    effectiveDate: "2026-08-07T00:00:00Z",
   },
 
   {

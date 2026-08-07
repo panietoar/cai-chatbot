@@ -169,14 +169,6 @@ describe("Output Guardrails — P4-S3", () => {
   // ============================================================================
 
   describe("unsupported capability detection", () => {
-    it("should block text claiming 'access the portal'", () => {
-      const text =
-        "You can access the portal to view your project status in real-time.";
-      const result = checkOutputGuardrails(text);
-      expect(result.safe).toBe(false);
-      expect(result.reason).toBe("unsupported_capability");
-    });
-
     it("should block text claiming 'book a live meeting'", () => {
       const text = "Book a live meeting with our team to review your AI roadmap.";
       const result = checkOutputGuardrails(text);
@@ -193,20 +185,6 @@ describe("Output Guardrails — P4-S3", () => {
 
     it("should block text claiming CRM integration", () => {
       const text = "Cadre can integrate with Salesforce to sync your data.";
-      const result = checkOutputGuardrails(text);
-      expect(result.safe).toBe(false);
-      expect(result.reason).toBe("unsupported_capability");
-    });
-
-    it("should block text claiming 'authenticate'", () => {
-      const text = "Authenticate with your company credentials to access the system.";
-      const result = checkOutputGuardrails(text);
-      expect(result.safe).toBe(false);
-      expect(result.reason).toBe("unsupported_capability");
-    });
-
-    it("should block text claiming 'login'", () => {
-      const text = "Login to your account to manage your AI projects.";
       const result = checkOutputGuardrails(text);
       expect(result.safe).toBe(false);
       expect(result.reason).toBe("unsupported_capability");
@@ -231,27 +209,6 @@ describe("Output Guardrails — P4-S3", () => {
         "Cadre provides AI strategy, implementation guidance, and technology selection services.";
       const result = checkOutputGuardrails(text);
       expect(result.safe).toBe(true);
-    });
-
-    it("should be case-insensitive when detecting banned phrases", () => {
-      const text = "ACCESS THE PORTAL to view your dashboard.";
-      const result = checkOutputGuardrails(text);
-      expect(result.safe).toBe(false);
-      expect(result.reason).toBe("unsupported_capability");
-    });
-
-    it("should be case-insensitive for mixed-case banned phrases", () => {
-      const text = "Access The Portal is available to all users.";
-      const result = checkOutputGuardrails(text);
-      expect(result.safe).toBe(false);
-      expect(result.reason).toBe("unsupported_capability");
-    });
-
-    it("should detect 'access your portal' variant", () => {
-      const text = "Access your portal to review project details.";
-      const result = checkOutputGuardrails(text);
-      expect(result.safe).toBe(false);
-      expect(result.reason).toBe("unsupported_capability");
     });
   });
 

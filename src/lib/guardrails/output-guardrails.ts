@@ -48,11 +48,11 @@ export type OutputGuardrailFailureReason =
  * Cadre does not provide or claims not yet verified.
  *
  * Kept as a constant for maintainability and auditability.
+ *
+ * Note: "login" and "authenticate" removed as of P7 since client portal
+ * login is now a verified, supported capability with an approved URL.
  */
 const BANNED_CAPABILITY_PHRASES = [
-  "access the portal",
-  "access your portal",
-  "access the client portal",
   "book a live meeting",
   "book a live call",
   "schedule a live call",
@@ -61,10 +61,7 @@ const BANNED_CAPABILITY_PHRASES = [
   "integrate with salesforce",
   "integrate with hubspot",
   "integrate with your crm",
-  "authenticate",
-  "login",
   "real-time handoff",
-  "authenticate to the system",
   "crm integration",
   "salesforce integration",
   "hubspot integration",
